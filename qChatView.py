@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QMenu,
                              )
 from PyQt5.QtCore import pyqtSignal, QThread, QObject, Qt
 
-default_style = """
+default_style = """\
 MyChat{
     border-radius: 10px;
     font: bold 14px;
