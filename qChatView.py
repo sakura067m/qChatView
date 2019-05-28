@@ -11,7 +11,7 @@ from PyQt5.QtCore import pyqtSignal, QThread, QObject, Qt
 default_style = """
 MyChat{
     border-radius: 10px;
-    font: bold 28px;
+    font: bold 14px;
     padding: 6px;
     background: lawngreen;
 
@@ -19,7 +19,7 @@ MyChat{
 OtherChat{
 /*    border: 2px solid black;*/
     border-radius: 10px;
-    font: bold 20px;
+    font: bold 14px;
     padding: 6px;
     background: white;
 }
