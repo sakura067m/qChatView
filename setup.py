@@ -1,12 +1,12 @@
 from setuptools import setup
 
 requirements = [
-    "PyQt5>=5.8.2",  # TBD
+    "PyQt5==5.8.2",  # qt>5.9 will crash on transparent
 ]
 
 setup(
     name="qChatView",  # TBC
-    version="1.0.0",
+    version="2.0.0",
     description="show your messages like a chat",
     url="https://github.com/sakura067m/qChatView",
     author="sakura067m",
