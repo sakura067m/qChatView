@@ -1,12 +1,15 @@
 import sys
 
-from PyQt5.QtGui import QGuiApplication, QIcon, QPalette, QColor
+from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QMenu,
-                             QWidget, QLabel, QSystemTrayIcon,
-                             QScrollArea, QVBoxLayout,QHBoxLayout,
-                             QFrame, QSizePolicy,QLayout,
+                             QWidget, QLabel, QScrollArea,
+                             QVBoxLayout, QHBoxLayout,
+                             QFrame, QSizePolicy, QLayout,
+                             QGraphicsOpacityEffect,
                              )
-from PyQt5.QtCore import pyqtSignal, QThread, QObject, Qt
+from PyQt5.QtCore import (Qt, QAbstractAnimation, QPropertyAnimation,
+                          QSequentialAnimationGroup, QEasingCurve,
+                          )
 
 default_style = """\
 MyChat{
@@ -24,13 +27,41 @@ OtherChat{
     background: white;
 }
 """
-class Base(QWidget):
-    pass
+
 class MyChat(QLabel):
     pass
 class OtherChat(QLabel):
     pass
-class Mine(QWidget):
+
+class Base(QWidget):
+    def set_fadeout(self, wait_for_sec=7):
+        opc = QGraphicsOpacityEffect(self)
+        self.opc = opc
+        self.setGraphicsEffect(opc)
+
+        cue = QSequentialAnimationGroup()
+        self.cue = cue
+        cue.addPause(wait_for_sec*1000)
+
+        # Fade-out
+        anim = QPropertyAnimation(opc, b"opacity")
+        self.anim = anim
+        anim.setDuration(3000)
+        anim.setStartValue(1)
+        anim.setEndValue(0)
+        anim.setEasingCurve(QEasingCurve.InExpo)
+
+        cue.addAnimation(anim)
+        cue.finished.connect(self.deleteLater)
+        cue.start(QAbstractAnimation.DeleteWhenStopped)
+
+    @classmethod
+    def auto_delete(cls, text, wait_for_sec=30, parent=None):
+        me = cls(text, parent)
+        me.set_fadeout(wait_for_sec=wait_for_sec)
+        return me
+
+class Mine(Base):
     def __init__(self, text, parent=None):
         super().__init__(parent)
         self.text = MyChat(text, self)
@@ -56,7 +87,7 @@ class Mine(QWidget):
         align.addWidget(self.text)
 
 
-class Other(QWidget):
+class Other(Base):
     def __init__(self, text, parent=None):
         super().__init__(parent)
         self.text = OtherChat(text, self)
@@ -89,8 +120,9 @@ class ShowHistory(QScrollArea):
         super().__init__(parent)
 ##        # prep
 ##        self.items = []
-        # make parts
         self.t_mode = False
+        self._auto_scroll = True
+        # make parts
         self.initUI()
 
     def initUI(self):
@@ -123,12 +155,18 @@ class ShowHistory(QScrollArea):
         self.vSB = vSB
         vSB.rangeChanged.connect(self.scroll_to_bottom)
 
-    def i_said(self, text):
-        chat = Mine(text,self.base)
+    def i_said(self, text, fade=-1):
+        if fade > 0:
+            chat = Mine.auto_delete(text, wait_for_sec=fade, parent=self.base)
+        else:
+            chat = Mine(text, self.base)
         self.scroll_layout.addWidget(chat)
 
-    def they_said(self, text):
-        chat = Other(text,self.base)
+    def they_said(self, text, fade=-1):
+        if fade > 0:
+            chat = Other.auto_delete(text, wait_for_sec=fade, parent=self.base)
+        else:
+            chat = Other(text, self.base)
         self.scroll_layout.addWidget(chat)
 
     def transparent(self, t_mode):
@@ -141,6 +179,7 @@ class ShowHistory(QScrollArea):
         base.update()
 
     def scroll_to_bottom(self):
+        if not self._auto_scroll: return
         vSB = self.verticalScrollBar()
         vSB.setValue(vSB.maximum())
         ### top = minimum()
@@ -155,6 +194,7 @@ class MainWindow(QMainWindow):
 
         self.t_mode = False
         self._ontop = False
+        self._auto_scroll = True
         self.initUI()
 
 
@@ -196,6 +236,10 @@ class MainWindow(QMainWindow):
 ##        else:
 ##            self.setWindowFlags(self.windowFlags() & ~Qt.WindowStaysOnTopHint)
         self.show()
+    
+    def sw_auto_scroll(self):
+        self._auto_scroll = not self._auto_scroll
+        self.history._auto_scroll = self._auto_scroll
 
     def contextMenuEvent(self, event):
         # construct
@@ -206,10 +250,17 @@ class MainWindow(QMainWindow):
         sw_t.setCheckable(True)
         sw_t.setChecked(self.t_mode)
         sw_t.toggled.connect(self.sw_transparent)
+
         sw_s = cmenu.addAction("on top")
         sw_s.setCheckable(True)
         sw_s.setChecked(self._ontop)
-        sw_s.toggled.connect(self.sw_ontop)
+
+        sw_s.toggled.connect(self.sw_auto_scroll)
+        sw_s = cmenu.addAction("auto")
+        sw_s.setCheckable(True)
+        sw_s.setChecked(self._auto_scroll)
+        sw_s.toggled.connect(self.sw_auto_scroll)
+
         close = cmenu.addAction("close")
 
         action = cmenu.exec_(self.mapToGlobal(event.pos()))
@@ -229,10 +280,10 @@ class MainWindow(QMainWindow):
             self.setWindowTitle(text)
         print("ouch")
 
-    def addChat1(self, text):
-        self.history.i_said(text)
-    def addChat2(self, text):
-        self.history.they_said(text)
+    def addChat1(self, text, fade=-1):
+        self.history.i_said(text, fade)
+    def addChat2(self, text, fade=-1):
+        self.history.they_said(text, fade)
 
 
 
@@ -244,5 +295,5 @@ if __name__ == "__main__":
     ex.show()
     choice = (ex.addChat2, ex.addChat1)
     for k in range(100):
-        choice[k&1]("test{:0>2}".format(k))
+        choice[k&1]("test{:0>2}".format(k),fade=k+3)
     sys.exit(app.exec_())
