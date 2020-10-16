@@ -151,7 +151,8 @@ class ShowHistory(QScrollArea):
         # set
         self.setWidget(base)
         # set trigger
-        vSB = self.verticalScrollBar(objectName="vSB")
+        vSB = self.verticalScrollBar()
+        vSB.setObjectName("vSB")
         self.vSB = vSB
         vSB.rangeChanged.connect(self.scroll_to_bottom)
 
