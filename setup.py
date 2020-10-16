@@ -6,7 +6,7 @@ requirements = [
 
 setup(
     name="qChatView",  # TBC
-    version="2.0.0",
+    version="2.1.0",
     description="show your messages like a chat",
     url="https://github.com/sakura067m/qChatView",
     author="sakura067m",
