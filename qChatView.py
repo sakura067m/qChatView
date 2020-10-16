@@ -169,6 +169,10 @@ class ShowHistory(QScrollArea):
             chat = Other(text, self.base)
         self.scroll_layout.addWidget(chat)
 
+    def clear_posts(self):
+        for c in self.base.children():
+            if isinstance(c, Base): c.deleteLater()
+
     def transparent(self, t_mode):
 ##        fshape = QFrame.NoFrame if t_mode else QFrame.Box
 ##        self.setFrameShape(fshape)
@@ -284,6 +288,8 @@ class MainWindow(QMainWindow):
         self.history.i_said(text, fade)
     def addChat2(self, text, fade=-1):
         self.history.they_said(text, fade)
+    def clear_history(self):
+        self.history.clear_posts()
 
 
 
