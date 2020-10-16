@@ -56,14 +56,14 @@ class Base(QWidget):
         cue.start(QAbstractAnimation.DeleteWhenStopped)
 
     @classmethod
-    def auto_delete(cls, text, wait_for_sec=30, parent=None):
-        me = cls(text, parent)
+    def auto_delete(cls, text, wait_for_sec=30, parent=None, *args, **kwargs):
+        me = cls(text, parent, *args, **kwargs)
         me.set_fadeout(wait_for_sec=wait_for_sec)
         return me
 
 class Mine(Base):
-    def __init__(self, text, parent=None):
-        super().__init__(parent)
+    def __init__(self, text, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
         self.text = MyChat(text, self)
         self.initUI()
 
@@ -88,8 +88,8 @@ class Mine(Base):
 
 
 class Other(Base):
-    def __init__(self, text, parent=None):
-        super().__init__(parent)
+    def __init__(self, text, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
         self.text = OtherChat(text, self)
         self.initUI()
 
@@ -116,8 +116,8 @@ class Other(Base):
 
 class ShowHistory(QScrollArea):
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 ##        # prep
 ##        self.items = []
         self.t_mode = False
@@ -130,7 +130,7 @@ class ShowHistory(QScrollArea):
 ##        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.NoFrame)
         # construct and set
-        base = QWidget(self)
+        base = QWidget(self, objectName="base")
         self.base = base
         self.setWidgetResizable(True)
 ##        base.setMinimumWidth(280)
@@ -140,9 +140,9 @@ class ShowHistory(QScrollArea):
                 QSizePolicy.MinimumExpanding
                 )
             )
-        margin = QVBoxLayout(base)
+        margin = QVBoxLayout(base, objectName="margin")
         margin.setSizeConstraint(QLayout.SetMaximumSize)
-        scroll_layout = QVBoxLayout(base)
+        scroll_layout = QVBoxLayout(objectName="scroll")
         self.scroll_layout = scroll_layout
         base.setLayout(margin)
         margin.addLayout(scroll_layout)
@@ -151,7 +151,7 @@ class ShowHistory(QScrollArea):
         # set
         self.setWidget(base)
         # set trigger
-        vSB = self.verticalScrollBar()
+        vSB = self.verticalScrollBar(objectName="vSB")
         self.vSB = vSB
         vSB.rangeChanged.connect(self.scroll_to_bottom)
 
@@ -193,8 +193,8 @@ class ShowHistory(QScrollArea):
 
 class MainWindow(QMainWindow):
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
         self.t_mode = False
         self._ontop = False
