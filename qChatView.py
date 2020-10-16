@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5.QtGui import QGuiApplication
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QMenu,
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QMenu, QAction,
                              QWidget, QLabel, QScrollArea,
                              QVBoxLayout, QHBoxLayout,
                              QFrame, QSizePolicy, QLayout,
@@ -215,6 +215,33 @@ class MainWindow(QMainWindow):
                                    )
 ##        self.sw_transparent()
 ##        self.setWindowFlags(self.windowFlags()|Qt.CustomizeWindowHint)
+        self.init_cmenu()
+
+    def init_cmenu(self):
+        # construct
+        cmenu = QMenu(self)
+        self.cmenu = cmenu
+##        name = "withframe" if self.t_mode else "transparent"
+        name = "transparent"
+        sw_t = cmenu.addAction(name)
+        sw_t.setCheckable(True)
+        sw_t.setChecked(self.t_mode)
+        sw_t.toggled.connect(self.sw_transparent)
+
+        sw_s = cmenu.addAction("on top")
+        sw_s.setCheckable(True)
+        sw_s.setChecked(self._ontop)
+
+        sw_s.toggled.connect(self.sw_auto_scroll)
+        sw_s = cmenu.addAction("auto")
+        sw_s.setCheckable(True)
+        sw_s.setChecked(self._auto_scroll)
+        sw_s.toggled.connect(self.sw_auto_scroll)
+
+        self.extra_cmenu = cmenu.addSection("extra")
+
+        close = cmenu.addAction("close")
+        self.choice_close = close
 
     def sw_transparent(self):
         # keep current position
@@ -246,27 +273,8 @@ class MainWindow(QMainWindow):
         self.history._auto_scroll = self._auto_scroll
 
     def contextMenuEvent(self, event):
-        # construct
-        cmenu = QMenu(self)
-##        name = "withframe" if self.t_mode else "transparent"
-        name = "transparent"
-        sw_t = cmenu.addAction(name)
-        sw_t.setCheckable(True)
-        sw_t.setChecked(self.t_mode)
-        sw_t.toggled.connect(self.sw_transparent)
-
-        sw_s = cmenu.addAction("on top")
-        sw_s.setCheckable(True)
-        sw_s.setChecked(self._ontop)
-
-        sw_s.toggled.connect(self.sw_auto_scroll)
-        sw_s = cmenu.addAction("auto")
-        sw_s.setCheckable(True)
-        sw_s.setChecked(self._auto_scroll)
-        sw_s.toggled.connect(self.sw_auto_scroll)
-
-        close = cmenu.addAction("close")
-
+        cmenu = self.cmenu
+        close = self.choice_close
         action = cmenu.exec_(self.mapToGlobal(event.pos()))
 ##        if action == sw_t:
 ##            self.sw_transparent()
@@ -302,4 +310,4 @@ if __name__ == "__main__":
     choice = (ex.addChat2, ex.addChat1)
     for k in range(100):
         choice[k&1]("test{:0>2}".format(k),fade=k+3)
-    sys.exit(app.exec_())
+##    sys.exit(app.exec_())
